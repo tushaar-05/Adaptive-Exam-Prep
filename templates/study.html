@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study - Adaptive Exam Prep</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --cream: #FAF8F1;
+      --light-yellow: #FAEAB1;
+      --teal: #34656D;
+      --dark-green: #334443;
+      --gradient: linear-gradient(135deg, #34656D 0%, #334443 100%);
+      --soft-gray: #F5F5F5;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: var(--cream);
+      color: var(--dark-green);
+      display: flex;
+      min-height: 100vh;
+      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="%2334656D" opacity="0.5"/><circle cx="12" cy="12" r="4" fill="%23334443"/></svg>'), auto;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    body.dark-mode {
+      background: #1a1a1a;
+      color: #FAF8F1;
+    }
+
+    body.dark-mode .sidebar {
+      background: #2a2a2a;
+      border-right: 2px solid #334443;
+    }
+
+    body.dark-mode .main {
+      background: #1a1a1a;
+    }
+
+    body.dark-mode .subject-card,
+    body.dark-mode .resource-card,
+    body.dark-mode .progress-card {
+      background: #2a2a2a;
+      border-color: #334443;
+    }
+
+    body.dark-mode .logo,
+    body.dark-mode h1,
+    body.dark-mode h2,
+    body.dark-mode h3 {
+      color: #FAF8F1;
+    }
+
+    body.dark-mode .tagline,
+    body.dark-mode p {
+      color: #FAEAB1;
+    }
+
+    body.dark-mode .nav-item {
+      color: #FAEAB1;
+    }
+
+    body.dark-mode .nav-item:hover {
+      background: #334443;
+    }
+
+    body.dark-mode .nav-item.active {
+      background: var(--teal);
+      color: #FAF8F1;
+    }
+
+    a:hover {
+      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23FAEAB1" opacity="0.7"/><circle cx="12" cy="12" r="5" fill="%2334656D"/></svg>'), pointer;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: white;
+      box-shadow: 2px 0 10px rgba(52, 101, 109, 0.1);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+      z-index: 100;
+      border-right: 2px solid var(--light-yellow);
+    }
+
+    .logo-section {
+      padding: 30px 20px;
+      text-align: center;
+      border-bottom: 2px solid var(--light-yellow);
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .logo i {
+      font-size: 32px;
+    }
+
+    .tagline {
+      font-size: 14px;
+      color: var(--teal);
+      margin-top: 5px;
+    }
+
+    .nav-links {
+      padding: 20px 0;
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px 25px;
+      color: var(--dark-green);
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+    }
+
+    .nav-item:hover {
+      background: var(--light-yellow);
+      border-left-color: var(--teal);
+    }
+
+    .nav-item.active {
+      background: var(--teal);
+      color: white;
+      border-left-color: var(--dark-green);
+    }
+
+    .nav-item i {
+      font-size: 18px;
+      width: 24px;
+      text-align: center;
+    }
+
+    /* Main Content */
+    .main {
+      margin-left: 250px;
+      padding: 30px;
+      width: calc(100% - 250px);
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      color: var(--teal);
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .dark-mode-toggle {
+      background: transparent;
+      border: 2px solid var(--teal);
+      color: var(--teal);
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.2rem;
+    }
+
+    .dark-mode-toggle:hover {
+      background: var(--teal);
+      color: var(--cream);
+      transform: rotate(180deg);
+    }
+
+    .github-link {
+      background: transparent;
+      border: 2px solid var(--teal);
+      color: var(--teal);
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.3rem;
+      text-decoration: none;
+    }
+
+    .github-link:hover {
+      background: var(--teal);
+      color: var(--cream);
+      transform: scale(1.1);
+    }
+
+    /* Subjects Grid */
+    .subjects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 25px;
+      margin-top: 20px;
+    }
+
+    .subject-card {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      border: 2px solid var(--light-yellow);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .subject-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--teal);
+      box-shadow: 0 8px 20px rgba(52, 101, 109, 0.2);
+    }
+
+    .subject-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .subject-icon {
+      width: 60px;
+      height: 60px;
+      background: var(--gradient);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: white;
+    }
+
+    .subject-info h3 {
+      font-size: 1.3rem;
+      color: var(--dark-green);
+      margin-bottom: 5px;
+    }
+
+    .confidence-level {
+      font-size: 0.9rem;
+      color: var(--teal);
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--light-yellow);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 15px 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--gradient);
+      transition: width 0.3s ease;
+    }
+
+    .subject-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      flex: 1;
+    }
+
+    .btn-primary {
+      background: var(--teal);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--dark-green);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--light-yellow);
+      color: var(--teal);
+    }
+
+    .btn-secondary:hover {
+      background: var(--teal);
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 70px;
+      }
+
+      .logo-text, .tagline, .nav-item span {
+        display: none;
+      }
+
+      .main {
+        margin-left: 70px;
+        width: calc(100% - 70px);
+      }
+
+      .subjects-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo-section">
+      <div class="logo">
+        <i class="fas fa-brain"></i>
+        <span class="logo-text">Dhiṣaṇā</span>
+      </div>
+      <div class="tagline">Study Smarter</div>
+    </div>
+    
+    <div class="nav-links">
+      <a href="/dashboard" class="nav-item">
+        <i class="fas fa-home"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="/study" class="nav-item active">
+        <i class="fas fa-book"></i>
+        <span>Study</span>
+      </a>
+      <a href="/practice" class="nav-item">
+        <i class="fas fa-pen"></i>
+        <span>Practice</span>
+      </a>
+      <a href="/ai-coach" class="nav-item">
+        <i class="fas fa-robot"></i>
+        <span>AI Coach</span>
+      </a>
+      <a href="/timetable" class="nav-item">
+        <i class="fas fa-calendar"></i>
+        <span>Time Table</span>
+      </a>
+      <a href="/analytics" class="nav-item">
+        <i class="fas fa-chart-line"></i>
+        <span>Analytics</span>
+      </a>
+    </div>
+    
+    <div style="padding: 20px; border-top: 1px solid var(--soft-gray);">
+      <a href="/logout" class="nav-item" style="color: #E74C3C;">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="header">
+      <h1><i class="fas fa-book"></i> Study Materials</h1>
+      <div class="header-actions">
+        <button class="dark-mode-toggle" id="darkModeToggle" title="Toggle Dark Mode">
+          <i class="fas fa-moon"></i>
+        </button>
+        <a href="https://github.com/tushaar-05/Adaptive-Exam-Prep" target="_blank" class="github-link" title="View on GitHub">
+          <i class="fab fa-github"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="subjects-grid">
+      {% if subjects %}
+        {% for subject in subjects %}
+        <div class="subject-card">
+          <div class="subject-header">
+            <div class="subject-icon">
+              {% if 'Math' in subject.subject_name %}
+                <i class="fas fa-calculator"></i>
+              {% elif 'Physics' in subject.subject_name %}
+                <i class="fas fa-flask"></i>
+              {% elif 'Chemistry' in subject.subject_name %}
+                <i class="fas fa-atom"></i>
+              {% elif 'Biology' in subject.subject_name %}
+                <i class="fas fa-dna"></i>
+              {% elif 'English' in subject.subject_name %}
+                <i class="fas fa-book-open"></i>
+              {% elif 'Computer' in subject.subject_name %}
+                <i class="fas fa-laptop-code"></i>
+              {% elif 'Science' in subject.subject_name %}
+                <i class="fas fa-microscope"></i>
+              {% elif 'Social' in subject.subject_name %}
+                <i class="fas fa-globe"></i>
+              {% elif 'Hindi' in subject.subject_name %}
+                <i class="fas fa-language"></i>
+              {% elif 'Account' in subject.subject_name %}
+                <i class="fas fa-calculator"></i>
+              {% elif 'Business' in subject.subject_name %}
+                <i class="fas fa-briefcase"></i>
+              {% elif 'Economics' in subject.subject_name %}
+                <i class="fas fa-chart-pie"></i>
+              {% elif 'History' in subject.subject_name %}
+                <i class="fas fa-landmark"></i>
+              {% elif 'Political' in subject.subject_name %}
+                <i class="fas fa-balance-scale"></i>
+              {% elif 'Geography' in subject.subject_name %}
+                <i class="fas fa-map"></i>
+              {% elif 'Psychology' in subject.subject_name %}
+                <i class="fas fa-brain"></i>
+              {% else %}
+                <i class="fas fa-book"></i>
+              {% endif %}
+            </div>
+            <div class="subject-info">
+              <h3>{{ subject.subject_name }}</h3>
+              <div class="confidence-level">Confidence: {{ subject.confidence_level }}/10</div>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ subject.confidence_level * 10 }}%;"></div>
+          </div>
+          <p style="color: var(--teal); margin-bottom: 15px;">Study materials available</p>
+          <div class="subject-actions">
+            <button class="btn btn-primary">Start Learning</button>
+            <button class="btn btn-secondary">Resources</button>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="grid-column: 1/-1; text-align: center; color: var(--teal); padding: 40px;">No subjects found. Please update your profile.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    // Dark Mode Toggle
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const body = document.body;
+    const darkModeIcon = darkModeToggle.querySelector('i');
+
+    if (localStorage.getItem('darkMode') === 'enabled') {
+      body.classList.add('dark-mode');
+      darkModeIcon.classList.remove('fa-moon');
+      darkModeIcon.classList.add('fa-sun');
+    }
+
+    darkModeToggle.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+      
+      if (body.classList.contains('dark-mode')) {
+        darkModeIcon.classList.remove('fa-moon');
+        darkModeIcon.classList.add('fa-sun');
+        localStorage.setItem('darkMode', 'enabled');
+      } else {
+        darkModeIcon.classList.remove('fa-sun');
+        darkModeIcon.classList.add('fa-moon');
+        localStorage.setItem('darkMode', 'disabled');
+      }
+    });
+  </script>
+</body>
+</html>

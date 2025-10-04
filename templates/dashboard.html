@@ -7,15 +7,12 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --pastel-blue: #A7C7E7;
-      --pastel-lavender: #4A44C6;
-      --pastel-mint: #B0E0B0;
-      --pastel-peach: #ffff;
-      --pastel-cream: #fbfbfb;
-      --pastel-lilac: #D8BFD8;
+      --cream: #FAF8F1;
+      --light-yellow: #FAEAB1;
+      --teal: #34656D;
+      --dark-green: #334443;
+      --gradient: linear-gradient(135deg, #34656D 0%, #334443 100%);
       --soft-gray: #F5F5F5;
-      --text-dark: #4A4A4A;
-      --text-light: #6B6B6B;
     }
 
     * {
@@ -26,34 +23,92 @@
     }
 
     body {
-      background: var(--pastel-cream);
-      color: var(--text-dark);
+      background: var(--cream);
+      color: var(--dark-green);
       display: flex;
       min-height: 100vh;
+      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="%2334656D" opacity="0.5"/><circle cx="12" cy="12" r="4" fill="%23334443"/></svg>'), auto;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    body.dark-mode {
+      background: #1a1a1a;
+      color: #FAF8F1;
+    }
+
+    body.dark-mode .sidebar {
+      background: #2a2a2a;
+      border-right: 2px solid #334443;
+    }
+
+    body.dark-mode .main {
+      background: #1a1a1a;
+    }
+
+    body.dark-mode .stat-card,
+    body.dark-mode .motivation-card,
+    body.dark-mode .calendar-card,
+    body.dark-mode .quizzes-card {
+      background: #2a2a2a;
+      border-color: #334443;
+    }
+
+    body.dark-mode .logo,
+    body.dark-mode h1,
+    body.dark-mode h2,
+    body.dark-mode h3,
+    body.dark-mode .stat-value,
+    body.dark-mode .card-title {
+      color: #FAF8F1;
+    }
+
+    body.dark-mode .tagline,
+    body.dark-mode .stat-label,
+    body.dark-mode .quote,
+    body.dark-mode p {
+      color: #FAEAB1;
+    }
+
+    body.dark-mode .nav-item {
+      color: #FAEAB1;
+    }
+
+    body.dark-mode .nav-item:hover {
+      background: #334443;
+    }
+
+    body.dark-mode .nav-item.active {
+      background: var(--teal);
+      color: #FAF8F1;
+    }
+
+    a:hover {
+      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23FAEAB1" opacity="0.7"/><circle cx="12" cy="12" r="5" fill="%2334656D"/></svg>'), pointer;
     }
 
     /* Sidebar */
     .sidebar {
       width: 250px;
       background: white;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+      box-shadow: 2px 0 10px rgba(52, 101, 109, 0.1);
       display: flex;
       flex-direction: column;
       position: fixed;
       height: 100vh;
       z-index: 100;
+      border-right: 2px solid var(--light-yellow);
     }
 
     .logo-section {
       padding: 30px 20px;
       text-align: center;
-      border-bottom: 1px solid var(--soft-gray);
+      border-bottom: 2px solid var(--light-yellow);
     }
 
     .logo {
       font-size: 28px;
       font-weight: 700;
-      color: var(--pastel-lavender);
+      color: var(--teal);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -66,7 +121,7 @@
 
     .tagline {
       font-size: 14px;
-      color: var(--text-light);
+      color: var(--teal);
       margin-top: 5px;
     }
 
@@ -80,21 +135,21 @@
       align-items: center;
       gap: 15px;
       padding: 15px 25px;
-      color: var(--text-dark);
+      color: var(--dark-green);
       text-decoration: none;
       transition: all 0.3s ease;
       border-left: 4px solid transparent;
     }
 
     .nav-item:hover {
-      background: var(--soft-gray);
-      border-left-color: var(--pastel-lavender);
+      background: var(--light-yellow);
+      border-left-color: var(--teal);
     }
 
     .nav-item.active {
-      background: var(--pastel-lavender);
+      background: var(--teal);
       color: white;
-      border-left-color: var(--pastel-blue);
+      border-left-color: var(--dark-green);
     }
 
     .nav-item i {
@@ -123,8 +178,57 @@
 
     .header h1 {
       font-size: 28px;
-      color: var(--pastel-lavender);
+      color: var(--teal);
       font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .dark-mode-toggle {
+      background: transparent;
+      border: 2px solid var(--teal);
+      color: var(--teal);
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.2rem;
+    }
+
+    .dark-mode-toggle:hover {
+      background: var(--teal);
+      color: var(--cream);
+      transform: rotate(180deg);
+    }
+
+    .github-link {
+      background: transparent;
+      border: 2px solid var(--teal);
+      color: var(--teal);
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.3rem;
+      text-decoration: none;
+    }
+
+    .github-link:hover {
+      background: var(--teal);
+      color: var(--cream);
+      transform: scale(1.1);
     }
 
     .user-info {
@@ -134,13 +238,19 @@
       background: white;
       padding: 10px 20px;
       border-radius: 50px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 10px rgba(52, 101, 109, 0.1);
+      border: 2px solid var(--light-yellow);
+    }
+
+    body.dark-mode .user-info {
+      background: #2a2a2a;
+      border-color: #334443;
     }
 
     .user-avatar {
       width: 40px;
       height: 40px;
-      background: var(--pastel-mint);
+      background: var(--gradient);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -160,12 +270,15 @@
       background: white;
       border-radius: 16px;
       padding: 25px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 12px rgba(52, 101, 109, 0.1);
       transition: transform 0.3s ease;
+      border: 2px solid var(--light-yellow);
     }
 
     .stat-card:hover {
       transform: translateY(-5px);
+      border-color: var(--teal);
+      box-shadow: 0 8px 20px rgba(52, 101, 109, 0.2);
     }
 
     .stat-icon {
@@ -180,23 +293,23 @@
     }
 
     .streak .stat-icon {
-      background: var(--pastel-peach);
-      color: #E67E22;
+      background: var(--gradient);
+      color: white;
     }
 
     .exam .stat-icon {
-      background: var(--pastel-mint);
-      color: #27AE60;
+      background: var(--light-yellow);
+      color: var(--teal);
     }
 
     .quizzes .stat-icon {
-      background: var(--pastel-blue);
-      color: #2980B9;
+      background: var(--teal);
+      color: white;
     }
 
     .level .stat-icon {
-      background: var(--pastel-lilac);
-      color: #8E44AD;
+      background: var(--dark-green);
+      color: var(--light-yellow);
     }
 
     .stat-value {
@@ -207,7 +320,7 @@
 
     .stat-label {
       font-size: 14px;
-      color: var(--text-light);
+      color: var(--teal);
     }
 
     /* Motivation Card */
@@ -215,18 +328,19 @@
       background: white;
       border-radius: 16px;
       padding: 25px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 12px rgba(52, 101, 109, 0.1);
       margin-bottom: 25px;
+      border: 2px solid var(--light-yellow);
     }
 
     .quote {
       font-style: italic;
       font-size: 18px;
       line-height: 1.6;
-      color: var(--text-dark);
+      color: var(--dark-green);
       text-align: center;
       padding: 20px;
-      background: var(--soft-gray);
+      background: var(--light-yellow);
       border-radius: 12px;
       position: relative;
     }
@@ -235,7 +349,7 @@
       text-align: right;
       margin-top: 15px;
       font-size: 16px;
-      color: var(--text-light);
+      color: var(--teal);
       font-style: normal;
     }
 
@@ -243,7 +357,7 @@
       position: absolute;
       top: 10px;
       right: 15px;
-      background: var(--pastel-lavender);
+      background: var(--teal);
       color: white;
       padding: 4px 12px;
       border-radius: 20px;
@@ -252,7 +366,7 @@
     }
 
     .refresh-quote {
-      background: var(--pastel-blue);
+      background: var(--teal);
       color: white;
       border: none;
       padding: 8px 16px;
@@ -260,11 +374,13 @@
       cursor: pointer;
       font-size: 14px;
       margin-top: 15px;
-      transition: background 0.3s ease;
+      transition: all 0.3s ease;
     }
 
     .refresh-quote:hover {
-      background: var(--pastel-lavender);
+      background: var(--dark-green);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(52, 101, 109, 0.3);
     }
 
     /* Calendar */
@@ -272,8 +388,9 @@
       background: white;
       border-radius: 16px;
       padding: 25px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 12px rgba(52, 101, 109, 0.1);
       margin-bottom: 25px;
+      border: 2px solid var(--light-yellow);
     }
 
     .card-header {
@@ -286,7 +403,7 @@
     .card-title {
       font-size: 20px;
       font-weight: 600;
-      color: var(--pastel-lavender);
+      color: var(--teal);
     }
 
     .calendar-placeholder {
@@ -305,7 +422,8 @@
       background: white;
       border-radius: 16px;
       padding: 25px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 12px rgba(52, 101, 109, 0.1);
+      border: 2px solid var(--light-yellow);
     }
 
     table {
@@ -316,14 +434,14 @@
     th {
       text-align: left;
       padding: 12px 0;
-      border-bottom: 1px solid var(--soft-gray);
-      color: var(--text-light);
-      font-weight: 500;
+      border-bottom: 2px solid var(--light-yellow);
+      color: var(--teal);
+      font-weight: 600;
     }
 
     td {
       padding: 15px 0;
-      border-bottom: 1px solid var(--soft-gray);
+      border-bottom: 1px solid var(--light-yellow);
     }
 
     .subject {
@@ -494,12 +612,20 @@
     <!-- Header -->
     <div class="header">
       <h1>Dashboard</h1>
-      <div class="user-info">
-        <div class="user-details">
-          <div style="font-weight: 600;">Alex Johnson</div>
-          <div style="font-size: 14px; color: var(--text-light);">Grade 11</div>
+      <div class="header-actions">
+        <button class="dark-mode-toggle" id="darkModeToggle" title="Toggle Dark Mode">
+          <i class="fas fa-moon"></i>
+        </button>
+        <a href="https://github.com/tushaar-05/Adaptive-Exam-Prep" target="_blank" class="github-link" title="View on GitHub">
+          <i class="fab fa-github"></i>
+        </a>
+        <div class="user-info">
+          <div class="user-details">
+            <div style="font-weight: 600;">{{ user.name if user else 'User' }}</div>
+            <div style="font-size: 14px; color: var(--teal);">Grade {{ user.grade if user else '11' }}</div>
+          </div>
+          <div class="user-avatar">{{ user.name[0:2].upper() if user else 'U' }}</div>
         </div>
-        <div class="user-avatar">AJ</div>
       </div>
     </div>
 
@@ -511,17 +637,17 @@
           <i class="fas fa-sync-alt"></i> New Quote
         </button>
       </div>
-      <div class="quote" id="motivationQuote">
+      <div id="motivationQuote" class="quote">
         {% if quote %}
           <span class="quote-category">{{ quote.category }}</span>
           "{{ quote.quote_text }}"
           <div class="quote-author">- {{ quote.author }}</div>
         {% else %}
-          "Push yourself, because no one else is going to do it for you."
+          <span class="quote-category">Motivation</span>
+          "Believe in yourself and all that you are."
           <div class="quote-author">- Unknown</div>
         {% endif %}
       </div>
-    </div>
 
     <!-- Stats Grid -->
     <div class="stats-grid">
@@ -688,6 +814,32 @@
   </div>
 
   <script>
+    // Dark Mode Toggle
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const body = document.body;
+    const darkModeIcon = darkModeToggle.querySelector('i');
+
+    // Check for saved dark mode preference
+    if (localStorage.getItem('darkMode') === 'enabled') {
+      body.classList.add('dark-mode');
+      darkModeIcon.classList.remove('fa-moon');
+      darkModeIcon.classList.add('fa-sun');
+    }
+
+    darkModeToggle.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+      
+      if (body.classList.contains('dark-mode')) {
+        darkModeIcon.classList.remove('fa-moon');
+        darkModeIcon.classList.add('fa-sun');
+        localStorage.setItem('darkMode', 'enabled');
+      } else {
+        darkModeIcon.classList.remove('fa-sun');
+        darkModeIcon.classList.add('fa-moon');
+        localStorage.setItem('darkMode', 'disabled');
+      }
+    });
+
     // Simple interactive elements
     document.addEventListener('DOMContentLoaded', function() {
       // Add hover effects to stat cards

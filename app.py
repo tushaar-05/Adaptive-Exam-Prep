@@ -608,11 +608,189 @@ def dashboard():
     if 'user_id' not in session:
         return redirect('/login')
     
-    # Get a random quote for the dashboard
-    quote = get_random_quote()
+    try:
+        connection = get_db_connection()
+        if connection is None:
+            return redirect('/login')
+        
+        cursor = connection.cursor(dictionary=True)
+        
+        # Get user info
+        cursor.execute("SELECT * FROM users WHERE id = %s", (session['user_id'],))
+        user = cursor.fetchone()
+        
+        # Get user subjects
+        cursor.execute("""
+            SELECT subject_name, confidence_level 
+            FROM user_subjects 
+            WHERE user_id = %s
+        """, (session['user_id'],))
+        subjects = cursor.fetchall()
+        
+        cursor.close()
+        connection.close()
+        
+        # Get a random quote
+        quote = get_random_quote()
+        
+        return render_template('dashboard.html', user=user, subjects=subjects, quote=quote)
+    except Exception as e:
+        print(f"Dashboard error: {e}")
+        return redirect('/login')
+
+# Study page route
+@app.route('/study')
+def study():
+    if 'user_id' not in session:
+        return redirect('/login')
     
-    # You can pass user data and quote to the template
-    return render_template('dashboard.html', quote=quote)
+    try:
+        connection = get_db_connection()
+        if connection is None:
+            return redirect('/login')
+        
+        cursor = connection.cursor(dictionary=True)
+        
+        # Get user subjects with confidence levels
+        cursor.execute("""
+            SELECT subject_name, confidence_level 
+            FROM user_subjects 
+            WHERE user_id = %s
+            ORDER BY subject_name
+        """, (session['user_id'],))
+        subjects = cursor.fetchall()
+        
+        cursor.close()
+        connection.close()
+        
+        return render_template('study.html', subjects=subjects)
+    except Exception as e:
+        print(f"Study page error: {e}")
+        return redirect('/dashboard')
+
+# Practice page route
+@app.route('/practice')
+def practice():
+    if 'user_id' not in session:
+        return redirect('/login')
+    
+    try:
+        connection = get_db_connection()
+        if connection is None:
+            return redirect('/login')
+        
+        cursor = connection.cursor(dictionary=True)
+        
+        # Get user subjects
+        cursor.execute("""
+            SELECT subject_name, confidence_level 
+            FROM user_subjects 
+            WHERE user_id = %s
+        """, (session['user_id'],))
+        subjects = cursor.fetchall()
+        
+        cursor.close()
+        connection.close()
+        
+        return render_template('practice.html', subjects=subjects)
+    except Exception as e:
+        print(f"Practice page error: {e}")
+        return redirect('/dashboard')
+
+# AI Coach page route
+@app.route('/ai-coach')
+def ai_coach():
+    if 'user_id' not in session:
+        return redirect('/login')
+    
+    try:
+        connection = get_db_connection()
+        if connection is None:
+            return redirect('/login')
+        
+        cursor = connection.cursor(dictionary=True)
+        
+        # Get user info and subjects
+        cursor.execute("SELECT name, grade, stream FROM users WHERE id = %s", (session['user_id'],))
+        user = cursor.fetchone()
+        
+        cursor.execute("""
+            SELECT subject_name, confidence_level 
+            FROM user_subjects 
+            WHERE user_id = %s
+        """, (session['user_id'],))
+        subjects = cursor.fetchall()
+        
+        cursor.close()
+        connection.close()
+        
+        return render_template('ai_coach.html', user=user, subjects=subjects)
+    except Exception as e:
+        print(f"AI Coach page error: {e}")
+        return redirect('/dashboard')
+
+# Timetable page route
+@app.route('/timetable')
+def timetable():
+    if 'user_id' not in session:
+        return redirect('/login')
+    
+    try:
+        connection = get_db_connection()
+        if connection is None:
+            return redirect('/login')
+        
+        cursor = connection.cursor(dictionary=True)
+        
+        # Get user info
+        cursor.execute("SELECT name, study_time FROM users WHERE id = %s", (session['user_id'],))
+        user = cursor.fetchone()
+        
+        # Get user subjects
+        cursor.execute("""
+            SELECT subject_name, confidence_level 
+            FROM user_subjects 
+            WHERE user_id = %s
+        """, (session['user_id'],))
+        subjects = cursor.fetchall()
+        
+        cursor.close()
+        connection.close()
+        
+        return render_template('timetable.html', user=user, subjects=subjects)
+    except Exception as e:
+        print(f"Timetable page error: {e}")
+        return redirect('/dashboard')
+
+# Analytics page route
+@app.route('/analytics')
+def analytics():
+    if 'user_id' not in session:
+        return redirect('/login')
+    
+    try:
+        connection = get_db_connection()
+        if connection is None:
+            return redirect('/login')
+        
+        cursor = connection.cursor(dictionary=True)
+        
+        # Get user subjects with confidence levels
+        cursor.execute("""
+            SELECT subject_name, confidence_level 
+            FROM user_subjects 
+            WHERE user_id = %s
+            ORDER BY confidence_level DESC
+        """, (session['user_id'],))
+        subjects = cursor.fetchall()
+        
+        cursor.close()
+        connection.close()
+        
+        return render_template('analytics.html', subjects=subjects)
+    except Exception as e:
+        print(f"Analytics page error: {e}")
+        return redirect('/dashboard')
 
 # API endpoint to get a new random quote
 @app.route('/api/random-quote')
