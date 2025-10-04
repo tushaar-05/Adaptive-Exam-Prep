@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Study Planner - Sign Up</title>
+    <style>
+       * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+.left-side {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background: white;
+}
+
+.left-side img {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+}
+
+.right-side {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background: #FFFFFF;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.05);
+    overflow-y: auto;
+}
+
+.form-container {
+    width: 100%;
+    max-width: 450px;
+    margin: auto;
+}
+
+h1 {
+    color: #4A4A4A;
+    margin-bottom: 10px;
+    font-size: 32px;
+}
+
+.subtitle {
+    color: #8B8B8B;
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+label.main-label {
+    display: block;
+    color: #4A4A4A;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #E8E8E8;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #FAFAFA;
+}
+
+input:focus,
+textarea:focus {
+    outline: none;
+    border-color: #4A44C6;
+    background: #FFFFFF;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+/* Radio button styles */
+.radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.radio-item {
+    position: relative;
+}
+
+.radio-item input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.radio-label {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #FAFAFA;
+    border: 2px solid #E8E8E8;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #4A4A4A;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.radio-item input[type="radio"]:checked + .radio-label {
+    background: #4A44C6;
+    border-color: #4A44C6;
+    color: #FFFFFF;
+}
+
+.radio-label:hover {
+    border-color: #4A44C6;
+    color: #FFFFFF;
+    background: #4A44C6;
+}
+
+/* Checkbox styles */
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.checkbox-item {
+    position: relative;
+}
+
+.checkbox-item input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.checkbox-label {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #FAFAFA;
+    border: 2px solid #E8E8E8;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #4A4A4A;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.checkbox-item input[type="checkbox"]:checked + .checkbox-label {
+    background: #4A44C6;
+    border-color: #4A44C6;
+    color: #FFFFFF;
+}
+
+.checkbox-label:hover {
+    border-color: #4A44C6;
+    color: #FFFFFF;
+    background: #4A44C6;
+}
+
+/* Slider styles */
+.slider-container {
+    padding: 10px 0;
+}
+
+.slider-value {
+    display: inline-block;
+    background: #4A44C6;
+    color: #FFFFFF;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+input[type="range"] {
+    width: 100%;
+    height: 8px;
+    border-radius: 5px;
+    background: #E8E8E8;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #4A44C6;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(74, 68, 198, 0.4);
+    transition: all 0.3s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    background: #3A34B6;
+    transform: scale(1.1);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #4A44C6;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 8px rgba(74, 68, 198, 0.4);
+    transition: all 0.3s ease;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+    background: #3A34B6;
+    transform: scale(1.1);
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #8B8B8B;
+}
+
+/* Subjects and Confidence Levels Styles */
+.subjects-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.subject-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background: #FAFAFA;
+    border: 2px solid #E8E8E8;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.subject-item:hover {
+    border-color: #4A44C6;
+}
+
+.subject-name {
+    font-weight: 500;
+    color: #4A4A4A;
+    min-width: 120px;
+}
+
+.confidence-slider {
+    flex: 1;
+    margin: 0 15px;
+}
+
+.confidence-value {
+    background: #4A44C6;
+    color: #FFFFFF;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-weight: 600;
+    font-size: 14px;
+    min-width: 40px;
+    text-align: center;
+}
+
+.confidence-instruction {
+    text-align: center;
+    color: #8B8B8B;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.hidden {
+    display: none;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    background: #4A44C6;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+button:hover {
+    background: #3A34B6;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(74, 68, 198, 0.3);
+    color: #FFFFFF;
+}
+
+button:active {
+    transform: translateY(0);
+    color: #FFFFFF;
+}
+
+.google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: #FFFFFF;
+    color: #4A4A4A;
+    border: 2px solid #E8E8E8;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.google-btn:hover {
+    background: #FAFAFA;
+    border-color: #D0D0D0;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    color: #4A4A4A;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 25px 0;
+    color: #8B8B8B;
+    font-size: 14px;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #E8E8E8;
+}
+
+.divider span {
+    padding: 0 15px;
+    font-weight: 500;
+}
+
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 5px;
+    display: none;
+}
+
+.success-message {
+    color: #27ae60;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 15px;
+    display: none;
+}
+
+.login-link {
+    text-align: center;
+    margin-top: 20px;
+    color: #8B8B8B;
+    font-size: 14px;
+}
+
+.login-link a {
+    color: #4A44C6;
+    text-decoration: none;
+    /* font-weight: 600; */
+    transition: color 0.3s ease;
+}
+
+.login-link a:hover {
+    color: #3A34B6;
+    text-decoration: underline;
+}
+
+/* Stream Selection Styles */
+.stream-group {
+    margin-bottom: 20px;
+}
+
+.stream-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.stream-option {
+    flex: 1;
+    min-width: 100px;
+}
+
+@media (max-width: 968px) {
+    .left-side {
+        display: none;
+    }
+    .right-side {
+        flex: 1;
+    }
+    
+    .subject-item {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+    
+    .subject-name {
+        min-width: auto;
+        text-align: center;
+    }
+    
+    .confidence-slider {
+        margin: 0;
+    }
+
+    .stream-options {
+        flex-direction: column;
+    }
+
+    .stream-option {
+        min-width: auto;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-side">
+            <img src="/static/images/signup.jpg" alt="Student studying">
+        </div>
+        
+        <div class="right-side">
+            <div class="form-container">
+                <h1>Welcome! 📚</h1>
+                <p class="subtitle">Create your account to start planning your studies</p>
+                
+                <form id="signupForm">
+                    <button type="button" class="google-btn" onclick="signupWithGoogle()">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                            <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18L12.05 13.56c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332C2.44 15.983 5.485 18 9.003 18z" fill="#34A853"/>
+                            <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                            <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.428 0 9.003 0 5.485 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
+                        </svg>
+                        Sign up with Google
+                    </button>
+
+                    <div class="divider">
+                        <span>OR</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="main-label" for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required placeholder="Enter your name">
+                        <div class="error-message" id="nameError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="main-label" for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required placeholder="your.email@example.com">
+                        <div class="error-message" id="emailError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="main-label" for="password">Password</label>
+                        <input type="password" id="password" name="password" required placeholder="Create a strong password">
+                        <div class="error-message" id="passwordError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="main-label">Grade</label>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" id="grade9" name="grade" value="9" required>
+                                <label class="radio-label" for="grade9">9th Grade</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="grade10" name="grade" value="10">
+                                <label class="radio-label" for="grade10">10th Grade</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="grade11" name="grade" value="11">
+                                <label class="radio-label" for="grade11">11th Grade</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="grade12" name="grade" value="12">
+                                <label class="radio-label" for="grade12">12th Grade</label>
+                            </div>
+                        </div>
+                        <div class="error-message" id="gradeError"></div>
+                    </div>
+
+                    <!-- Stream Selection for 11th/12th -->
+                    <div class="form-group hidden" id="streamGroup">
+                        <label class="main-label">Select Your Stream</label>
+                        <div class="stream-options">
+                            <div class="radio-item stream-option">
+                                <input type="radio" id="stream_science" name="stream" value="Science">
+                                <label class="radio-label" for="stream_science">Science</label>
+                            </div>
+                            <div class="radio-item stream-option">
+                                <input type="radio" id="stream_commerce" name="stream" value="Commerce">
+                                <label class="radio-label" for="stream_commerce">Commerce</label>
+                            </div>
+                            <div class="radio-item stream-option">
+                                <input type="radio" id="stream_arts" name="stream" value="Arts">
+                                <label class="radio-label" for="stream_arts">Arts</label>
+                            </div>
+                        </div>
+                        <div class="error-message" id="streamError"></div>
+                    </div>
+
+                    <div class="form-group hidden" id="examGroup">
+                        <label class="main-label">Competitive Exams (Select all that apply)</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="jee" name="exams" value="JEE">
+                                <label class="checkbox-label" for="jee">JEE</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="neet" name="exams" value="NEET">
+                                <label class="checkbox-label" for="neet">NEET</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="mhcet" name="exams" value="MHCET">
+                                <label class="checkbox-label" for="mhcet">MH-CET</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bitsat" name="exams" value="BITSAT">
+                                <label class="checkbox-label" for="bitsat">BITSAT</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="other" name="exams" value="Other">
+                                <label class="checkbox-label" for="other">Other</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="main-label">Daily Study Time</label>
+                        <div class="slider-container">
+                            <div class="slider-value">
+                                <span id="timeValue">4</span> hours per day
+                            </div>
+                            <input type="range" id="studyTime" name="studyTime" min="1" max="12" value="4" step="0.5">
+                            <div class="slider-labels">
+                                <span>1 hour</span>
+                                <span>12 hours</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subjects Section -->
+                    <div class="form-group">
+                        <label class="main-label">Your Subjects & Confidence Levels</label>
+                        <div class="subjects-container" id="subjectsContainer">
+                            <!-- Subjects will be dynamically added here -->
+                        </div>
+                        <div class="confidence-instruction">
+                            <small>Rate your confidence level from 1 (Beginner) to 10 (Expert)</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="main-label" for="hobbies">Your Hobbies & Interests</label>
+                        <textarea id="hobbies" name="hobbies" placeholder="Tell us about your hobbies (e.g., watching anime, cooking, singing, playing sports...)"></textarea>
+                    </div>
+
+                    <button type="submit" id="submitBtn">Create Account</button>
+                    <div class="success-message" id="successMessage"></div>
+                    
+                    <div class="login-link">
+                        Already have an account? <a href="/login">Log in</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const gradeRadios = document.querySelectorAll('input[name="grade"]');
+        const streamGroup = document.getElementById('streamGroup');
+        const examGroup = document.getElementById('examGroup');
+        const studyTimeSlider = document.getElementById('studyTime');
+        const timeValue = document.getElementById('timeValue');
+        const form = document.getElementById('signupForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const successMessage = document.getElementById('successMessage');
+        const subjectsContainer = document.getElementById('subjectsContainer');
+
+        // Subject lists for different grades and streams
+        const subjectLists = {
+            '9': ['Mathematics', 'Science', 'Social Studies', 'English', 'Hindi', 'Artificial Intelligence'],
+            '10': ['Mathematics', 'Science', 'Social Studies', 'English', 'Hindi', 'Artificial Intelligence'],
+            '11': {
+                'Science': ['Physics', 'Chemistry', 'Mathematics', 'Biology', 'English', 'Computer Science'],
+                'Commerce': ['Accountancy', 'Business Studies', 'Economics', 'Mathematics', 'English', 'Computer Science'],
+                'Arts': ['History', 'Political Science', 'Geography', 'Economics', 'Psychology', 'English']
+            },
+            '12': {
+                'Science': ['Physics', 'Chemistry', 'Mathematics', 'Biology', 'English', 'Computer Science'],
+                'Commerce': ['Accountancy', 'Business Studies', 'Economics', 'Mathematics', 'English', 'Computer Science'],
+                'Arts': ['History', 'Political Science', 'Geography', 'Economics', 'Psychology', 'English']
+            }
+        };
+
+        // Update slider value display
+        studyTimeSlider.addEventListener('input', function() {
+            timeValue.textContent = this.value;
+        });
+
+        // Show/hide stream and exam options based on grade
+        gradeRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                const grade = this.value;
+                
+                // Reset stream selection when grade changes
+                document.querySelectorAll('input[name="stream"]').forEach(streamRadio => {
+                    streamRadio.checked = false;
+                });
+                
+                if (grade === '11' || grade === '12') {
+                    streamGroup.classList.remove('hidden');
+                    examGroup.classList.remove('hidden');
+                    // Clear subjects until stream is selected
+                    subjectsContainer.innerHTML = '<div class="confidence-instruction">Please select your stream first</div>';
+                } else {
+                    streamGroup.classList.add('hidden');
+                    examGroup.classList.add('hidden');
+                    document.querySelectorAll('input[name="exams"]').forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                    // Update subjects for 9th/10th grade
+                    updateSubjects(grade);
+                }
+            });
+        });
+
+        // Update subjects when stream is selected for 11th/12th
+        document.querySelectorAll('input[name="stream"]').forEach(streamRadio => {
+            streamRadio.addEventListener('change', function() {
+                const grade = document.querySelector('input[name="grade"]:checked');
+                if (grade && (grade.value === '11' || grade.value === '12')) {
+                    updateSubjects(grade.value, this.value);
+                }
+            });
+        });
+
+        // Function to update subjects based on selected grade and stream
+        function updateSubjects(grade, stream = null) {
+            subjectsContainer.innerHTML = '';
+            let subjects = [];
+            
+            if (grade === '9' || grade === '10') {
+                subjects = subjectLists[grade] || [];
+            } else if ((grade === '11' || grade === '12') && stream) {
+                subjects = subjectLists[grade][stream] || [];
+            }
+            
+            if (subjects.length === 0) {
+                subjectsContainer.innerHTML = '<div class="confidence-instruction">Please select your grade and stream first</div>';
+                return;
+            }
+            
+            subjects.forEach(subject => {
+                const subjectItem = document.createElement('div');
+                subjectItem.className = 'subject-item';
+                subjectItem.innerHTML = `
+                    <div class="subject-name">${subject}</div>
+                    <input type="range" class="confidence-slider" 
+                           name="confidence_${subject.toLowerCase().replace(' ', '_')}" 
+                           min="1" max="10" value="5" 
+                           oninput="updateConfidenceValue(this)">
+                    <div class="confidence-value">5</div>
+                `;
+                subjectsContainer.appendChild(subjectItem);
+            });
+        }
+
+        // Update confidence value display
+        function updateConfidenceValue(slider) {
+            const valueDisplay = slider.nextElementSibling;
+            valueDisplay.textContent = slider.value;
+        }
+
+        // Clear error messages when user starts typing
+        document.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('input', function() {
+                hideError(this.name);
+            });
+        });
+
+        function showError(field, message) {
+            const errorElement = document.getElementById(field + 'Error');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+        }
+
+        function hideError(field) {
+            const errorElement = document.getElementById(field + 'Error');
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+        }
+
+        function showLoading() {
+            submitBtn.textContent = 'Creating Account...';
+            submitBtn.classList.add('loading');
+        }
+
+        function hideLoading() {
+            submitBtn.textContent = 'Create Account';
+            submitBtn.classList.remove('loading');
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(error => {
+                error.style.display = 'none';
+            });
+
+            // Basic validation
+            let isValid = true;
+
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const grade = document.querySelector('input[name="grade"]:checked');
+            const stream = document.querySelector('input[name="stream"]:checked');
+
+            if (!name) {
+                showError('name', 'Please enter your full name');
+                isValid = false;
+            }
+
+            if (!email) {
+                showError('email', 'Please enter your email address');
+                isValid = false;
+            } else if (!/\S+@\S+\.\S+/.test(email)) {
+                showError('email', 'Please enter a valid email address');
+                isValid = false;
+            }
+
+            if (!password) {
+                showError('password', 'Please create a password');
+                isValid = false;
+            } else if (password.length < 6) {
+                showError('password', 'Password must be at least 6 characters long');
+                isValid = false;
+            }
+
+            if (!grade) {
+                showError('grade', 'Please select your grade');
+                isValid = false;
+            }
+
+            // Validate stream for 11th/12th grade
+            if ((grade.value === '11' || grade.value === '12') && !stream) {
+                showError('stream', 'Please select your stream');
+                isValid = false;
+            }
+
+            if (!isValid) return;
+
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('email', email);
+            formData.append('password', password);
+            formData.append('grade', grade.value);
+            formData.append('studyTime', document.getElementById('studyTime').value);
+            formData.append('hobbies', document.getElementById('hobbies').value.trim());
+
+            // Add stream if selected
+            if (stream) {
+                formData.append('stream', stream.value);
+            }
+
+            // Add subjects data
+            const subjectsData = {};
+            document.querySelectorAll('.subject-item').forEach(item => {
+                const subjectName = item.querySelector('.subject-name').textContent;
+                const confidenceLevel = item.querySelector('.confidence-slider').value;
+                subjectsData[subjectName] = parseInt(confidenceLevel);
+            });
+            formData.append('subjects', JSON.stringify(subjectsData));
+
+            const selectedGrade = grade.value;
+            if (selectedGrade === '11' || selectedGrade === '12') {
+                document.querySelectorAll('input[name="exams"]:checked').forEach(checkbox => {
+                    formData.append('exams', checkbox.value);
+                });
+            }
+
+            // Show loading state
+            showLoading();
+
+            // Send data to Flask backend
+            fetch('/signup', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess(data.message);
+                    form.reset();
+                    // Reset slider display
+                    timeValue.textContent = '4';
+                    // Hide groups
+                    streamGroup.classList.add('hidden');
+                    examGroup.classList.add('hidden');
+                    // Reset subjects
+                    updateSubjects('9');
+                } else {
+                    if (data.error.includes('Email already exists')) {
+                        showError('email', data.error);
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while creating your account. Please try again.');
+            })
+            .finally(() => {
+                hideLoading();
+            });
+        });
+
+        function signupWithGoogle() {
+            fetch('/api/google-signup', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Google signup response:', data);
+                alert('Google Sign-up: ' + data.message);
+            })
+            .catch(error => {
+                console.error('Google signup error:', error);
+                alert('Google Sign-up is currently unavailable. Please use the form below.');
+            });
+        }
+
+        // Initialize with default subjects for 9th grade
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSubjects('9');
+        });
+    </script>
+</body>
+</html>
