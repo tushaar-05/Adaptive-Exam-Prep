@@ -602,6 +602,100 @@ def get_random_quote():
         return None
 
 
+# Helper function to calculate adaptive recommendations
+def calculate_adaptive_recommendations(user_id):
+    """Calculate personalized recommendations based on performance vs confidence"""
+    try:
+        connection = get_db_connection()
+        if connection is None:
+            return []
+        
+        cursor = connection.cursor(dictionary=True)
+        
+        # Get subjects with confidence and performance data
+        cursor.execute("""
+            SELECT 
+                us.subject_name,
+                us.confidence_level,
+                COALESCE(AVG(qa.score), 0) as avg_score,
+                COUNT(qa.id) as quiz_count
+            FROM user_subjects us
+            LEFT JOIN quiz_attempts qa ON us.user_id = qa.user_id AND us.subject_name = qa.subject_name
+            WHERE us.user_id = %s
+            GROUP BY us.subject_name, us.confidence_level
+        """, (user_id,))
+        
+        subjects_data = cursor.fetchall()
+        recommendations = []
+        
+        for subject in subjects_data:
+            confidence = subject['confidence_level']
+            performance = subject['avg_score']
+            quiz_count = subject['quiz_count']
+            
+            # Calculate confidence-performance mismatch
+            # Confidence is 1-10, Performance is 0-100, normalize to same scale
+            normalized_confidence = confidence * 10  # Convert to 0-100 scale
+            
+            if quiz_count > 0:
+                mismatch = normalized_confidence - performance
+                
+                # High confidence but low performance - needs extra practice
+                if mismatch > 30:  # Overconfident by 30+ points
+                    recommendations.append({
+                        'subject': subject['subject_name'],
+                        'type': 'confidence_mismatch',
+                        'priority': 'high',
+                        'reason': f"You rated yourself {confidence}/10 in {subject['subject_name']}, but your average score is {performance:.1f}%",
+                        'action': f"Allocate 3 extra practice sessions per week for {subject['subject_name']}",
+                        'sessions_per_week': 3,
+                        'session_duration': 45
+                    })
+                
+                # Low confidence but high performance - build confidence
+                elif mismatch < -20:  # Underconfident
+                    recommendations.append({
+                        'subject': subject['subject_name'],
+                        'type': 'confidence_boost',
+                        'priority': 'medium',
+                        'reason': f"You're performing well ({performance:.1f}%) but rated yourself only {confidence}/10",
+                        'action': f"Focus on advanced topics in {subject['subject_name']} to build confidence",
+                        'sessions_per_week': 2,
+                        'session_duration': 30
+                    })
+                
+                # Low performance regardless of confidence
+                if performance < 50:
+                    recommendations.append({
+                        'subject': subject['subject_name'],
+                        'type': 'weak_performance',
+                        'priority': 'high',
+                        'reason': f"Average score of {performance:.1f}% needs improvement",
+                        'action': f"Daily short revision sessions (2x 20min) for {subject['subject_name']}",
+                        'sessions_per_week': 7,
+                        'session_duration': 20
+                    })
+            else:
+                # No quiz data - recommend based on low confidence
+                if confidence <= 5:
+                    recommendations.append({
+                        'subject': subject['subject_name'],
+                        'type': 'low_confidence',
+                        'priority': 'high',
+                        'reason': f"Low confidence ({confidence}/10) in {subject['subject_name']}",
+                        'action': f"Start with 2 practice sessions per week for {subject['subject_name']}",
+                        'sessions_per_week': 2,
+                        'session_duration': 40
+                    })
+        
+        cursor.close()
+        connection.close()
+        return recommendations
+        
+    except Exception as e:
+        print(f"Error calculating recommendations: {e}")
+        return []
+
 # Update your dashboard route
 @app.route('/dashboard')
 def dashboard():
@@ -619,26 +713,37 @@ def dashboard():
         cursor.execute("SELECT * FROM users WHERE id = %s", (session['user_id'],))
         user = cursor.fetchone()
         
-        # Get user subjects
+        # Get user subjects with performance data
         cursor.execute("""
-            SELECT subject_name, confidence_level 
-            FROM user_subjects 
-            WHERE user_id = %s
+            SELECT 
+                us.subject_name,
+                us.confidence_level,
+                COALESCE(AVG(qa.score), 0) as avg_score,
+                COUNT(qa.id) as quiz_count,
+                MAX(qa.attempted_at) as last_attempt
+            FROM user_subjects us
+            LEFT JOIN quiz_attempts qa ON us.user_id = qa.user_id AND us.subject_name = qa.subject_name
+            WHERE us.user_id = %s
+            GROUP BY us.subject_name, us.confidence_level
+            ORDER BY us.subject_name
         """, (session['user_id'],))
         subjects = cursor.fetchall()
         
         cursor.close()
         connection.close()
         
+        # Get adaptive recommendations
+        recommendations = calculate_adaptive_recommendations(session['user_id'])
+        
         # Get a random quote
         quote = get_random_quote()
         
-        return render_template('dashboard.html', user=user, subjects=subjects, quote=quote)
+        return render_template('dashboard.html', user=user, subjects=subjects, quote=quote, recommendations=recommendations)
     except Exception as e:
         print(f"Dashboard error: {e}")
         return redirect('/login')
 
-# Study page route
+# Study page route with adaptive prioritization
 @app.route('/study')
 def study():
     if 'user_id' not in session:
@@ -651,19 +756,43 @@ def study():
         
         cursor = connection.cursor(dictionary=True)
         
-        # Get user subjects with confidence levels
+        # Get user subjects with performance data and calculate priority
         cursor.execute("""
-            SELECT subject_name, confidence_level 
-            FROM user_subjects 
-            WHERE user_id = %s
-            ORDER BY subject_name
+            SELECT 
+                us.subject_name,
+                us.confidence_level,
+                COALESCE(AVG(qa.score), 0) as avg_score,
+                COUNT(qa.id) as quiz_count,
+                MAX(qa.attempted_at) as last_attempt,
+                CASE 
+                    WHEN COUNT(qa.id) = 0 THEN 'no_data'
+                    WHEN (us.confidence_level * 10) - COALESCE(AVG(qa.score), 0) > 30 THEN 'needs_attention'
+                    WHEN COALESCE(AVG(qa.score), 0) < 50 THEN 'weak'
+                    WHEN COALESCE(AVG(qa.score), 0) >= 80 THEN 'strong'
+                    ELSE 'moderate'
+                END as status
+            FROM user_subjects us
+            LEFT JOIN quiz_attempts qa ON us.user_id = qa.user_id AND us.subject_name = qa.subject_name
+            WHERE us.user_id = %s
+            GROUP BY us.subject_name, us.confidence_level
+            ORDER BY 
+                CASE 
+                    WHEN (us.confidence_level * 10) - COALESCE(AVG(qa.score), 0) > 30 THEN 1
+                    WHEN COALESCE(AVG(qa.score), 0) < 50 THEN 2
+                    WHEN COUNT(qa.id) = 0 AND us.confidence_level <= 5 THEN 3
+                    ELSE 4
+                END,
+                us.subject_name
         """, (session['user_id'],))
         subjects = cursor.fetchall()
         
         cursor.close()
         connection.close()
         
-        return render_template('study.html', subjects=subjects)
+        # Get recommendations for context
+        recommendations = calculate_adaptive_recommendations(session['user_id'])
+        
+        return render_template('study.html', subjects=subjects, recommendations=recommendations)
     except Exception as e:
         print(f"Study page error: {e}")
         return redirect('/dashboard')
@@ -729,7 +858,7 @@ def ai_coach():
         print(f"AI Coach page error: {e}")
         return redirect('/dashboard')
 
-# Timetable page route
+# Timetable page route with adaptive scheduling
 @app.route('/timetable')
 def timetable():
     if 'user_id' not in session:
@@ -746,21 +875,94 @@ def timetable():
         cursor.execute("SELECT name, study_time FROM users WHERE id = %s", (session['user_id'],))
         user = cursor.fetchone()
         
-        # Get user subjects
+        # Get subjects with performance data for adaptive scheduling
         cursor.execute("""
-            SELECT subject_name, confidence_level 
-            FROM user_subjects 
-            WHERE user_id = %s
+            SELECT 
+                us.subject_name,
+                us.confidence_level,
+                COALESCE(AVG(qa.score), 0) as avg_score,
+                COUNT(qa.id) as quiz_count
+            FROM user_subjects us
+            LEFT JOIN quiz_attempts qa ON us.user_id = qa.user_id AND us.subject_name = qa.subject_name
+            WHERE us.user_id = %s
+            GROUP BY us.subject_name, us.confidence_level
         """, (session['user_id'],))
         subjects = cursor.fetchall()
         
         cursor.close()
         connection.close()
         
-        return render_template('timetable.html', user=user, subjects=subjects)
+        # Generate adaptive schedule based on performance
+        recommendations = calculate_adaptive_recommendations(session['user_id'])
+        
+        # Create weekly schedule
+        total_study_hours = float(user['study_time']) if user else 2.0
+        schedule = generate_adaptive_schedule(subjects, recommendations, total_study_hours)
+        
+        return render_template('timetable.html', user=user, subjects=subjects, schedule=schedule, recommendations=recommendations)
     except Exception as e:
         print(f"Timetable page error: {e}")
         return redirect('/dashboard')
+
+def generate_adaptive_schedule(subjects, recommendations, total_hours_per_day):
+    """Generate adaptive weekly schedule based on performance"""
+    schedule = {
+        'Monday': [], 'Tuesday': [], 'Wednesday': [], 
+        'Thursday': [], 'Friday': [], 'Saturday': [], 'Sunday': []
+    }
+    
+    # Calculate total weekly hours
+    total_weekly_minutes = total_hours_per_day * 60 * 7
+    
+    # Allocate time based on recommendations
+    subject_allocations = {}
+    
+    for rec in recommendations:
+        subject = rec['subject']
+        sessions_per_week = rec.get('sessions_per_week', 2)
+        session_duration = rec.get('session_duration', 30)
+        
+        if subject not in subject_allocations:
+            subject_allocations[subject] = {
+                'sessions': sessions_per_week,
+                'duration': session_duration,
+                'priority': rec['priority']
+            }
+    
+    # Fill in remaining subjects
+    for subject_data in subjects:
+        subject = subject_data['subject_name']
+        if subject not in subject_allocations:
+            # Default allocation for subjects without specific recommendations
+            subject_allocations[subject] = {
+                'sessions': 2,
+                'duration': 30,
+                'priority': 'medium'
+            }
+    
+    # Distribute sessions across the week
+    days = list(schedule.keys())
+    day_index = 0
+    
+    # Sort subjects by priority
+    priority_order = {'high': 0, 'medium': 1, 'low': 2}
+    sorted_subjects = sorted(subject_allocations.items(), 
+                           key=lambda x: priority_order.get(x[1]['priority'], 1))
+    
+    for subject, allocation in sorted_subjects:
+        sessions = allocation['sessions']
+        duration = allocation['duration']
+        
+        for i in range(sessions):
+            day = days[day_index % 7]
+            schedule[day].append({
+                'subject': subject,
+                'duration': duration,
+                'type': 'practice' if allocation['priority'] == 'high' else 'revision'
+            })
+            day_index += 1
+    
+    return schedule
 
 # Analytics page route
 @app.route('/analytics')

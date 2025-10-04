@@ -577,23 +577,23 @@
         <i class="fas fa-home"></i>
         <span>Dashboard</span>
       </a>
-      <a href="#" class="nav-item">
+      <a href="/study" class="nav-item">
         <i class="fas fa-book"></i>
         <span>Study</span>
       </a>
-      <a href="#" class="nav-item">
+      <a href="/practice" class="nav-item">
         <i class="fas fa-pen"></i>
         <span>Practice</span>
       </a>
-      <a href="#" class="nav-item">
+      <a href="/ai-coach" class="nav-item">
         <i class="fas fa-robot"></i>
         <span>AI Coach</span>
       </a>
-      <a href="#" class="nav-item">
+      <a href="/timetable" class="nav-item">
         <i class="fas fa-calendar"></i>
         <span>Time Table</span>
       </a>
-      <a href="#" class="nav-item">
+      <a href="/analytics" class="nav-item">
         <i class="fas fa-chart-line"></i>
         <span>Analytics</span>
       </a>
@@ -648,6 +648,87 @@
           <div class="quote-author">- Unknown</div>
         {% endif %}
       </div>
+
+    <!-- Adaptive Recommendations Section -->
+    {% if recommendations %}
+    <div style="background: white; border-radius: 16px; padding: 25px; margin-bottom: 25px; border: 2px solid var(--light-yellow); box-shadow: 0 4px 12px rgba(52, 101, 109, 0.1);">
+      <div class="card-header" style="margin-bottom: 20px;">
+        <div class="card-title"><i class="fas fa-brain"></i> Adaptive Recommendations</div>
+        <span style="color: var(--teal); font-size: 0.9rem;">Based on your performance vs confidence</span>
+      </div>
+      
+      <div style="display: grid; gap: 15px;">
+        {% for rec in recommendations %}
+        <div style="background: {% if rec.priority == 'high' %}#FFE5E5{% elif rec.priority == 'medium' %}#FFF4E5{% else %}#E5F5FF{% endif %}; padding: 20px; border-radius: 12px; border-left: 4px solid {% if rec.priority == 'high' %}#E74C3C{% elif rec.priority == 'medium' %}#F39C12{% else %}#3498DB{% endif %};">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+            <div>
+              <h3 style="color: var(--dark-green); font-size: 1.1rem; margin-bottom: 5px;">
+                <i class="fas fa-exclamation-triangle" style="color: {% if rec.priority == 'high' %}#E74C3C{% elif rec.priority == 'medium' %}#F39C12{% else %}#3498DB{% endif %};"></i>
+                {{ rec.subject }}
+              </h3>
+              <span style="background: {% if rec.priority == 'high' %}#E74C3C{% elif rec.priority == 'medium' %}#F39C12{% else %}#3498DB{% endif %}; color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                {{ rec.priority.upper() }} PRIORITY
+              </span>
+            </div>
+          </div>
+          <p style="color: var(--dark-green); margin-bottom: 10px; font-weight: 500;">
+            <i class="fas fa-info-circle"></i> {{ rec.reason }}
+          </p>
+          <p style="color: var(--teal); font-weight: 600;">
+            <i class="fas fa-lightbulb"></i> Action: {{ rec.action }}
+          </p>
+          <div style="margin-top: 10px; display: flex; gap: 15px; font-size: 0.9rem; color: var(--teal);">
+            <span><i class="fas fa-calendar-week"></i> {{ rec.sessions_per_week }} sessions/week</span>
+            <span><i class="fas fa-clock"></i> {{ rec.session_duration }} min each</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Performance vs Confidence Overview -->
+    <div style="background: white; border-radius: 16px; padding: 25px; margin-bottom: 25px; border: 2px solid var(--light-yellow); box-shadow: 0 4px 12px rgba(52, 101, 109, 0.1);">
+      <div class="card-title" style="margin-bottom: 20px;"><i class="fas fa-chart-bar"></i> Performance Overview</div>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+        {% for subject in subjects %}
+        <div style="background: var(--cream); padding: 15px; border-radius: 12px; border: 2px solid {% if subject.avg_score > 0 and (subject.confidence_level * 10 - subject.avg_score) > 30 %}#E74C3C{% elif subject.avg_score < 50 and subject.quiz_count > 0 %}#F39C12{% else %}var(--light-yellow){% endif %};">
+          <h4 style="color: var(--dark-green); margin-bottom: 10px;">{{ subject.subject_name }}</h4>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: var(--teal); font-size: 0.9rem;">Confidence:</span>
+            <span style="font-weight: 600; color: var(--dark-green);">{{ subject.confidence_level }}/10</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: var(--teal); font-size: 0.9rem;">Avg Score:</span>
+            <span style="font-weight: 600; color: {% if subject.avg_score >= 80 %}#27AE60{% elif subject.avg_score >= 50 %}#F39C12{% else %}#E74C3C{% endif %};">
+              {{ "%.1f"|format(subject.avg_score) }}%
+            </span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--teal); font-size: 0.9rem;">Quizzes Taken:</span>
+            <span style="font-weight: 600; color: var(--dark-green);">{{ subject.quiz_count }}</span>
+          </div>
+          {% if subject.quiz_count > 0 %}
+            {% set mismatch = (subject.confidence_level * 10) - subject.avg_score %}
+            {% if mismatch > 30 %}
+            <div style="margin-top: 10px; padding: 8px; background: #FFE5E5; border-radius: 6px; font-size: 0.85rem; color: #E74C3C;">
+              <i class="fas fa-exclamation-circle"></i> Overconfident - Need more practice!
+            </div>
+            {% elif mismatch < -20 %}
+            <div style="margin-top: 10px; padding: 8px; background: #E5F5FF; border-radius: 6px; font-size: 0.85rem; color: #3498DB;">
+              <i class="fas fa-star"></i> Performing better than expected!
+            </div>
+            {% endif %}
+          {% else %}
+          <div style="margin-top: 10px; padding: 8px; background: #FFF4E5; border-radius: 6px; font-size: 0.85rem; color: #F39C12;">
+            <i class="fas fa-info-circle"></i> Take a quiz to track progress
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
 
     <!-- Stats Grid -->
     <div class="stats-grid">
