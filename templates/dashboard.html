@@ -368,6 +368,53 @@
       text-align: center;
     }
 
+    /* Calendar Events Styles */
+    .calendar-events-list {
+      display: grid;
+      gap: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .calendar-event-item {
+      background: var(--soft-gray);
+      padding: 15px;
+      border-radius: 12px;
+      border-left: 4px solid var(--pastel-lavender);
+      transition: all 0.3s ease;
+    }
+
+    .calendar-event-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .event-title {
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 5px;
+    }
+
+    .event-time {
+      font-size: 14px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .event-description {
+      font-size: 13px;
+      color: var(--text-light);
+      margin-top: 8px;
+    }
+
+    .no-events {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+
     /* Responsive Design */
     @media (max-width: 1024px) {
       .stats-grid {
@@ -408,7 +455,7 @@
     </div>
     
     <div class="nav-links">
-      <a href="#" class="nav-item active">
+      <a href="/dashboard" class="nav-item active">
         <i class="fas fa-home"></i>
         <span>Dashboard</span>
       </a>
@@ -431,6 +478,13 @@
       <a href="#" class="nav-item">
         <i class="fas fa-chart-line"></i>
         <span>Analytics</span>
+      </a>
+    </div>
+    
+    <div style="padding: 20px; border-top: 1px solid var(--soft-gray);">
+      <a href="/logout" class="nav-item" style="color: #E74C3C;">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
       </a>
     </div>
   </div>
@@ -507,11 +561,63 @@
     <!-- Calendar - Full Width -->
     <div class="calendar-card">
       <div class="card-header">
-        <div class="card-title">Calendar</div>
-        <div style="color: var(--text-light); font-size: 14px;">October 2024</div>
+        <div class="card-title">
+          <i class="fas fa-calendar-alt"></i> Study Calendar
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <span id="calendarStatus" style="color: var(--text-light); font-size: 14px;"></span>
+          <button class="refresh-quote" id="addEventBtn" style="margin: 0;">
+            <i class="fas fa-plus"></i> Add Event
+          </button>
+          <button class="refresh-quote" id="syncCalendarBtn" style="margin: 0; background: var(--pastel-mint);">
+            <i class="fas fa-sync-alt"></i> Sync
+          </button>
+        </div>
       </div>
-      <div class="calendar-placeholder">
-        Interactive Calendar View
+      <div id="calendarContainer">
+        <div id="calendarEvents" class="calendar-events-list"></div>
+        <div id="calendarPlaceholder" class="calendar-placeholder" style="display: none;">
+          <div style="text-align: center;">
+            <i class="fas fa-calendar-times" style="font-size: 48px; color: var(--text-light); margin-bottom: 15px;"></i>
+            <p>Connect your Google Calendar to sync study events</p>
+            <button onclick="window.location.href='/auth/google/login'" style="margin-top: 15px; padding: 10px 20px; background: var(--pastel-lavender); color: white; border: none; border-radius: 8px; cursor: pointer;">
+              Connect Google Calendar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Event Modal -->
+    <div id="eventModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+      <div style="background: white; padding: 30px; border-radius: 16px; max-width: 500px; width: 90%;">
+        <h3 style="margin-bottom: 20px; color: var(--pastel-lavender);">Add Study Event</h3>
+        <form id="eventForm">
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Event Title</label>
+            <input type="text" id="eventTitle" required style="width: 100%; padding: 10px; border: 2px solid #E8E8E8; border-radius: 8px;">
+          </div>
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Description</label>
+            <textarea id="eventDescription" style="width: 100%; padding: 10px; border: 2px solid #E8E8E8; border-radius: 8px; min-height: 60px;"></textarea>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Start Time</label>
+            <input type="datetime-local" id="eventStart" required style="width: 100%; padding: 10px; border: 2px solid #E8E8E8; border-radius: 8px;">
+          </div>
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 500;">End Time</label>
+            <input type="datetime-local" id="eventEnd" required style="width: 100%; padding: 10px; border: 2px solid #E8E8E8; border-radius: 8px;">
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button type="submit" style="flex: 1; padding: 12px; background: var(--pastel-lavender); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+              Create Event
+            </button>
+            <button type="button" id="closeModalBtn" style="flex: 1; padding: 12px; background: #E8E8E8; color: #4A4A4A; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -651,6 +757,154 @@
       setInterval(() => {
         refreshButton.click();
       }, 30 * 60 * 1000);
+
+      // Google Calendar Integration
+      const calendarEventsContainer = document.getElementById('calendarEvents');
+      const calendarPlaceholder = document.getElementById('calendarPlaceholder');
+      const calendarStatus = document.getElementById('calendarStatus');
+      const syncCalendarBtn = document.getElementById('syncCalendarBtn');
+      const addEventBtn = document.getElementById('addEventBtn');
+      const eventModal = document.getElementById('eventModal');
+      const eventForm = document.getElementById('eventForm');
+      const closeModalBtn = document.getElementById('closeModalBtn');
+
+      // Load calendar events
+      function loadCalendarEvents() {
+        calendarStatus.textContent = 'Loading...';
+        fetch('/api/calendar/events')
+          .then(response => response.json())
+          .then(data => {
+            if (data.connected && data.success) {
+              calendarStatus.textContent = 'Connected';
+              calendarStatus.style.color = 'var(--pastel-mint)';
+              displayCalendarEvents(data.events);
+              calendarPlaceholder.style.display = 'none';
+              addEventBtn.style.display = 'block';
+            } else {
+              calendarStatus.textContent = 'Not Connected';
+              calendarStatus.style.color = 'var(--text-light)';
+              calendarPlaceholder.style.display = 'flex';
+              calendarEventsContainer.innerHTML = '';
+              addEventBtn.style.display = 'none';
+            }
+          })
+          .catch(error => {
+            console.error('Error loading calendar:', error);
+            calendarStatus.textContent = 'Error';
+            calendarPlaceholder.style.display = 'flex';
+            addEventBtn.style.display = 'none';
+          });
+      }
+
+      function displayCalendarEvents(events) {
+        if (!events || events.length === 0) {
+          calendarEventsContainer.innerHTML = '<div class="no-events"><i class="fas fa-calendar-check"></i><br>No upcoming events</div>';
+          return;
+        }
+
+        calendarEventsContainer.innerHTML = events.map(event => {
+          const startTime = new Date(event.start.dateTime || event.start.date);
+          const endTime = new Date(event.end.dateTime || event.end.date);
+          const formattedStart = startTime.toLocaleString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          });
+          const formattedEnd = endTime.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          });
+
+          return `
+            <div class="calendar-event-item">
+              <div class="event-title">${event.summary || 'Untitled Event'}</div>
+              <div class="event-time">
+                <i class="fas fa-clock"></i>
+                ${formattedStart} - ${formattedEnd}
+              </div>
+              ${event.description ? `<div class="event-description">${event.description}</div>` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Sync calendar
+      syncCalendarBtn.addEventListener('click', function() {
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+        loadCalendarEvents();
+        setTimeout(() => {
+          this.disabled = false;
+          this.innerHTML = '<i class="fas fa-sync-alt"></i> Sync';
+        }, 1000);
+      });
+
+      // Add event modal
+      addEventBtn.addEventListener('click', function() {
+        eventModal.style.display = 'flex';
+        // Set default start time to now
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('eventStart').value = now.toISOString().slice(0, 16);
+        // Set default end time to 1 hour from now
+        const endTime = new Date(now.getTime() + 60 * 60 * 1000);
+        document.getElementById('eventEnd').value = endTime.toISOString().slice(0, 16);
+      });
+
+      closeModalBtn.addEventListener('click', function() {
+        eventModal.style.display = 'none';
+        eventForm.reset();
+      });
+
+      // Close modal on outside click
+      eventModal.addEventListener('click', function(e) {
+        if (e.target === eventModal) {
+          eventModal.style.display = 'none';
+          eventForm.reset();
+        }
+      });
+
+      // Submit event form
+      eventForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const title = document.getElementById('eventTitle').value;
+        const description = document.getElementById('eventDescription').value;
+        const startTime = new Date(document.getElementById('eventStart').value).toISOString();
+        const endTime = new Date(document.getElementById('eventEnd').value).toISOString();
+
+        fetch('/api/calendar/create-event', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title: title,
+            description: description,
+            start_time: startTime,
+            end_time: endTime
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert('Event created successfully!');
+            eventModal.style.display = 'none';
+            eventForm.reset();
+            loadCalendarEvents();
+          } else {
+            alert('Error: ' + data.error);
+          }
+        })
+        .catch(error => {
+          console.error('Error creating event:', error);
+          alert('Failed to create event. Please try again.');
+        });
+      });
+
+      // Initial load
+      loadCalendarEvents();
     });
   </script>
 </body>

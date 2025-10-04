@@ -211,10 +211,13 @@ input[type="range"] {
     background: #E8E8E8;
     outline: none;
     -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
+    -moz-appearance: none;
     appearance: none;
     width: 24px;
     height: 24px;
@@ -885,18 +888,8 @@ button:active {
         });
 
         function signupWithGoogle() {
-            fetch('/api/google-signup', {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Google signup response:', data);
-                alert('Google Sign-up: ' + data.message);
-            })
-            .catch(error => {
-                console.error('Google signup error:', error);
-                alert('Google Sign-up is currently unavailable. Please use the form below.');
-            });
+            // Redirect to Google OAuth login
+            window.location.href = '/auth/google/login';
         }
 
         // Initialize with default subjects for 9th grade

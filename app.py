@@ -3,19 +3,42 @@ import mysql.connector
 from mysql.connector import Error
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import session
 import random
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from google_auth_oauthlib.flow import Flow
+from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+from dotenv import load_dotenv
+import secrets
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Change this to a random secret key
+app.secret_key = os.getenv('SECRET_KEY', secrets.token_hex(32))
+
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
+GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI', 'http://localhost:5000/auth/google/callback')
+
+# OAuth 2.0 scopes
+SCOPES = [
+    'openid',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/calendar'
+]
 
 # Database configuration
 db_config = {
-    'host': 'localhost',
-    'user': 'root',  # Default XAMPP username
-    'password': '',  # Default XAMPP password (empty)
-    'database': 'study_planner'
+    'host': os.getenv('DB_HOST', 'localhost'),
+    'user': os.getenv('DB_USER', 'root'),
+    'password': os.getenv('DB_PASSWORD', ''),
+    'database': os.getenv('DB_NAME', 'study_planner')
 }
 
 
@@ -192,14 +215,138 @@ def view_user_subjects(user_id):
         print(f"Database error: {e}")
         return jsonify({'error': 'Database error occurred'}), 500
 
+# Google OAuth Routes
+@app.route('/auth/google/login')
+def google_login():
+    """Initiate Google OAuth login"""
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        return jsonify({'error': 'Google OAuth not configured. Please set up credentials.'}), 500
+    
+    try:
+        flow = Flow.from_client_config(
+            {
+                "web": {
+                    "client_id": GOOGLE_CLIENT_ID,
+                    "client_secret": GOOGLE_CLIENT_SECRET,
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                    "redirect_uris": [GOOGLE_REDIRECT_URI]
+                }
+            },
+            scopes=SCOPES
+        )
+        flow.redirect_uri = GOOGLE_REDIRECT_URI
+        
+        authorization_url, state = flow.authorization_url(
+            access_type='offline',
+            include_granted_scopes='true',
+            prompt='consent'
+        )
+        
+        session['oauth_state'] = state
+        return redirect(authorization_url)
+    except Exception as e:
+        print(f"Google OAuth error: {e}")
+        return jsonify({'error': 'Failed to initiate Google login'}), 500
+
+@app.route('/auth/google/callback')
+def google_callback():
+    """Handle Google OAuth callback"""
+    try:
+        if 'oauth_state' not in session:
+            return redirect('/login?error=invalid_state')
+        
+        flow = Flow.from_client_config(
+            {
+                "web": {
+                    "client_id": GOOGLE_CLIENT_ID,
+                    "client_secret": GOOGLE_CLIENT_SECRET,
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                    "redirect_uris": [GOOGLE_REDIRECT_URI]
+                }
+            },
+            scopes=SCOPES,
+            state=session['oauth_state']
+        )
+        flow.redirect_uri = GOOGLE_REDIRECT_URI
+        
+        # Get authorization response
+        authorization_response = request.url
+        flow.fetch_token(authorization_response=authorization_response)
+        
+        # Get credentials
+        credentials = flow.credentials
+        
+        # Get user info
+        user_info_service = build('oauth2', 'v2', credentials=credentials)
+        user_info = user_info_service.userinfo().get().execute()
+        
+        email = user_info.get('email')
+        name = user_info.get('name')
+        google_id = user_info.get('id')
+        
+        # Check if user exists
+        connection = get_db_connection()
+        if connection is None:
+            return redirect('/login?error=db_connection')
+        
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        user = cursor.fetchone()
+        
+        if user:
+            # Update Google credentials
+            cursor.execute("""
+                UPDATE users 
+                SET google_id = %s, google_access_token = %s, google_refresh_token = %s
+                WHERE id = %s
+            """, (google_id, credentials.token, credentials.refresh_token, user['id']))
+            connection.commit()
+            
+            # Set session
+            session['user_id'] = user['id']
+            session['user_email'] = user['email']
+            session['user_name'] = user['name']
+            session['user_grade'] = user['grade']
+            session['user_stream'] = user['stream']
+            session['google_credentials'] = credentials_to_dict(credentials)
+            
+            cursor.close()
+            connection.close()
+            return redirect('/dashboard')
+        else:
+            # New user - redirect to complete signup
+            session['google_user_info'] = {
+                'email': email,
+                'name': name,
+                'google_id': google_id,
+                'credentials': credentials_to_dict(credentials)
+            }
+            cursor.close()
+            connection.close()
+            return redirect('/create?google=true')
+            
+    except Exception as e:
+        print(f"Google callback error: {e}")
+        return redirect('/login?error=oauth_failed')
+
+def credentials_to_dict(credentials):
+    """Convert credentials object to dictionary"""
+    return {
+        'token': credentials.token,
+        'refresh_token': credentials.refresh_token,
+        'token_uri': credentials.token_uri,
+        'client_id': credentials.client_id,
+        'client_secret': credentials.client_secret,
+        'scopes': credentials.scopes
+    }
+
 # API endpoint for Google signup (placeholder)
 @app.route('/api/google-signup', methods=['POST'])
 def google_signup():
-    # This would handle Google OAuth in production
-    return jsonify({
-        'message': 'Google Sign-up would be implemented here with OAuth',
-        'status': 'not_implemented'
-    })
+    """Initiate Google OAuth for signup"""
+    return redirect('/auth/google/login')
 
 # Add login route
 @app.route('/login', methods=['POST'])
@@ -303,12 +450,125 @@ def logout():
 
 # Google login API endpoint
 @app.route('/api/google-login', methods=['POST'])
-def google_login():
-    # This would handle Google OAuth in production
+def google_login_api():
+    """API endpoint to redirect to Google OAuth"""
     return jsonify({
-        'message': 'Google Login would be implemented here with OAuth',
-        'status': 'not_implemented'
+        'redirect_url': '/auth/google/login'
     })
+
+# Google Calendar Integration
+def get_calendar_service(user_id):
+    """Get Google Calendar service for a user"""
+    try:
+        connection = get_db_connection()
+        if connection is None:
+            return None
+        
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT google_access_token, google_refresh_token 
+            FROM users 
+            WHERE id = %s
+        """, (user_id,))
+        user = cursor.fetchone()
+        cursor.close()
+        connection.close()
+        
+        if not user or not user.get('google_access_token'):
+            return None
+        
+        credentials = Credentials(
+            token=user['google_access_token'],
+            refresh_token=user['google_refresh_token'],
+            token_uri='https://oauth2.googleapis.com/token',
+            client_id=GOOGLE_CLIENT_ID,
+            client_secret=GOOGLE_CLIENT_SECRET,
+            scopes=SCOPES
+        )
+        
+        service = build('calendar', 'v3', credentials=credentials)
+        return service
+    except Exception as e:
+        print(f"Error getting calendar service: {e}")
+        return None
+
+@app.route('/api/calendar/events')
+def get_calendar_events():
+    """Get user's calendar events"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Please login first'}), 401
+    
+    try:
+        service = get_calendar_service(session['user_id'])
+        if not service:
+            return jsonify({'error': 'Google Calendar not connected', 'connected': False}), 200
+        
+        # Get events for the next 30 days
+        now = datetime.utcnow().isoformat() + 'Z'
+        end_date = (datetime.utcnow() + timedelta(days=30)).isoformat() + 'Z'
+        
+        events_result = service.events().list(
+            calendarId='primary',
+            timeMin=now,
+            timeMax=end_date,
+            maxResults=50,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
+        
+        events = events_result.get('items', [])
+        
+        return jsonify({
+            'success': True,
+            'connected': True,
+            'events': events
+        })
+    except Exception as e:
+        print(f"Error fetching calendar events: {e}")
+        return jsonify({'error': 'Failed to fetch calendar events', 'connected': False}), 500
+
+@app.route('/api/calendar/create-event', methods=['POST'])
+def create_calendar_event():
+    """Create a new calendar event"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Please login first'}), 401
+    
+    try:
+        service = get_calendar_service(session['user_id'])
+        if not service:
+            return jsonify({'error': 'Google Calendar not connected'}), 400
+        
+        data = request.json
+        event = {
+            'summary': data.get('title'),
+            'description': data.get('description', ''),
+            'start': {
+                'dateTime': data.get('start_time'),
+                'timeZone': 'Asia/Kolkata',
+            },
+            'end': {
+                'dateTime': data.get('end_time'),
+                'timeZone': 'Asia/Kolkata',
+            },
+            'reminders': {
+                'useDefault': False,
+                'overrides': [
+                    {'method': 'popup', 'minutes': 30},
+                    {'method': 'popup', 'minutes': 10},
+                ],
+            },
+        }
+        
+        created_event = service.events().insert(calendarId='primary', body=event).execute()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Event created successfully',
+            'event': created_event
+        })
+    except Exception as e:
+        print(f"Error creating calendar event: {e}")
+        return jsonify({'error': 'Failed to create calendar event'}), 500
 
 # Forgot password route (placeholder)
 @app.route('/forgot-password')

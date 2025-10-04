@@ -420,18 +420,8 @@
         });
 
         function loginWithGoogle() {
-            fetch('/api/google-login', {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Google login response:', data);
-                alert('Google Login: ' + data.message);
-            })
-            .catch(error => {
-                console.error('Google login error:', error);
-                alert('Google Login is currently unavailable. Please use the form below.');
-            });
+            // Redirect to Google OAuth login
+            window.location.href = '/auth/google/login';
         }
 
         // Check if there's a success message in URL parameters (for redirects from signup)
